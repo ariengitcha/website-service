@@ -1,1 +1,40 @@
+import requests
+import pandas as pd
+
+# Replace with your API key
+API_KEY = 'your_api_key'
+API_ENDPOINT = 'https://api.keywordtool.io/v2/search'
+
+def fetch_keywords(niche, location='us', language='en'):
+    params = {
+        'apikey': API_KEY,
+        'keyword': niche,
+        'location': location,
+        'language': language,
+        'metrics': True
+    }
+    
+    response = requests.get(API_ENDPOINT, params=params)
+    data = response.json()
+    
+    # Process and filter keywords
+    keywords = []
+    for item in data['results']:
+        if item['competition'] < 0.3:  # Low competition threshold
+            keywords.append({
+                'keyword': item['keyword'],
+                'search_volume': item['search_volume'],
+                'competition': item['competition']
+            })
+    
+    return pd.DataFrame(keywords)
+
+def save_keywords_to_csv(keywords_df, filename='keywords.csv'):
+    keywords_df.to_csv(filename, index=False)
+
+if __name__ == '__main__':
+    niche = 'healthy recipes'  # Example niche
+    keywords_df = fetch_keywords(niche)
+    save_keywords_to_csv(keywords_df)
+    print(f"Keywords saved to {filename}")
 
